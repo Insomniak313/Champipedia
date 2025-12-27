@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Mushroom {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  commonNameFr    String
+  scientificName  String
+  family          String?
+
+  // Filtrage par critères (valeurs simples pour rester compatibles SQLite)
+  edibilityStatus String // "comestible" | "toxique" | "non_comestible" | "inconnu"
+  capShape        String? // ex: "convexe", "plat", "entonnoir"
+  capColor        String? // ex: "brun", "rouge", "blanc"
+  hymenophoreType String? // "lamelles" | "tubes" | "aiguillons" | "plis"
+  sporePrintColor String? // ex: "blanc", "brun", "rose"
+  hasRing         Boolean  @default(false)
+  hasVolva        Boolean  @default(false)
+  bruisingColor   String?  // ex: "bleu", "rouge", "aucun"
+  habitat         String?  // ex: "forêt", "prairie", "souche"
+  seasonTags      String?  // ex: "printemps,été,automne"
+
+  description     String?
+  warnings        String?
+  imageUrl        String?
+
+  @@index([commonNameFr])
+  @@index([scientificName])
+  @@index([edibilityStatus])
+  @@index([capColor])
+  @@index([hymenophoreType])
+  @@index([habitat])
+}

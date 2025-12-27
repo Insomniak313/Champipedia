@@ -1,0 +1,358 @@
+import { PrismaClient } from "@prisma/client";
+import "dotenv/config";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+import path from "node:path";
+
+const databaseUrl = process.env["DATABASE_URL"];
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL manquant dans l'environnement (.env).");
+}
+
+const isSqliteUrl = databaseUrl === ":memory:" || databaseUrl.startsWith("file:");
+
+const prisma = new PrismaClient({
+  adapter: isSqliteUrl
+    ? new PrismaBetterSqlite3({
+        url:
+          databaseUrl === ":memory:"
+            ? ":memory:"
+            : path.resolve(process.cwd(), databaseUrl.replace(/^file:/, "")),
+      })
+    : new PrismaPg(new pg.Pool({ connectionString: databaseUrl }), {
+        disposeExternalPool: true,
+      }),
+});
+
+interface SeedMushroom {
+  commonNameFr: string;
+  scientificName: string;
+  family?: string;
+  edibilityStatus: string;
+  capShape?: string;
+  capColor?: string;
+  hymenophoreType?: string;
+  sporePrintColor?: string;
+  hasRing?: boolean;
+  hasVolva?: boolean;
+  bruisingColor?: string;
+  habitat?: string;
+  seasonTags?: string;
+  description?: string;
+  warnings?: string;
+  imageUrl?: string;
+}
+
+const mushrooms: SeedMushroom[] = [
+  {
+    commonNameFr: "Cèpe de Bordeaux",
+    scientificName: "Boletus edulis",
+    family: "Boletaceae",
+    edibilityStatus: "comestible",
+    capShape: "convexe",
+    capColor: "brun",
+    hymenophoreType: "tubes",
+    sporePrintColor: "olive",
+    bruisingColor: "aucun",
+    habitat: "forêt",
+    seasonTags: "été,automne",
+    description: "Bolet robuste, tubes blancs puis jaunâtres, pied trapu.",
+  },
+  {
+    commonNameFr: "Girolle",
+    scientificName: "Cantharellus cibarius",
+    family: "Cantharellaceae",
+    edibilityStatus: "comestible",
+    capShape: "entonnoir",
+    capColor: "jaune",
+    hymenophoreType: "plis",
+    sporePrintColor: "jaune_pâle",
+    habitat: "forêt",
+    seasonTags: "été,automne",
+    description: "Plis décurrents, odeur fruitée.",
+  },
+  {
+    commonNameFr: "Amanite phalloïde",
+    scientificName: "Amanita phalloides",
+    family: "Amanitaceae",
+    edibilityStatus: "toxique",
+    capShape: "convexe",
+    capColor: "vert_olive",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "blanc",
+    hasRing: true,
+    hasVolva: true,
+    habitat: "forêt",
+    seasonTags: "été,automne",
+    warnings: "Mortelle. Volve + anneau + lamelles blanches.",
+  },
+  {
+    commonNameFr: "Amanite tue-mouches",
+    scientificName: "Amanita muscaria",
+    family: "Amanitaceae",
+    edibilityStatus: "toxique",
+    capShape: "convexe",
+    capColor: "rouge",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "blanc",
+    hasRing: true,
+    hasVolva: true,
+    habitat: "forêt",
+    seasonTags: "été,automne",
+    description: "Chapeau rouge à verrues blanches (souvent lessivées).",
+    warnings: "Toxique (neurotoxique).",
+  },
+  {
+    commonNameFr: "Amanite panthère",
+    scientificName: "Amanita pantherina",
+    family: "Amanitaceae",
+    edibilityStatus: "toxique",
+    capShape: "convexe",
+    capColor: "brun",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "blanc",
+    hasRing: true,
+    hasVolva: true,
+    habitat: "forêt",
+    seasonTags: "été,automne",
+    warnings: "Toxique. Attention aux confusions avec amanites comestibles.",
+  },
+  {
+    commonNameFr: "Coulemelle",
+    scientificName: "Macrolepiota procera",
+    family: "Agaricaceae",
+    edibilityStatus: "comestible",
+    capShape: "convexe",
+    capColor: "brun",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "blanc",
+    hasRing: true,
+    habitat: "prairie",
+    seasonTags: "été,automne",
+    description: "Grand chapeau à écailles, anneau mobile, pied zébré.",
+  },
+  {
+    commonNameFr: "Rosé-des-prés",
+    scientificName: "Agaricus campestris",
+    family: "Agaricaceae",
+    edibilityStatus: "comestible",
+    capShape: "convexe",
+    capColor: "blanc",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "brun",
+    habitat: "prairie",
+    seasonTags: "printemps,été,automne",
+    description: "Lamelles roses puis brun chocolat, odeur agréable.",
+  },
+  {
+    commonNameFr: "Agaric jaunissant",
+    scientificName: "Agaricus xanthodermus",
+    family: "Agaricaceae",
+    edibilityStatus: "toxique",
+    capShape: "convexe",
+    capColor: "blanc",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "brun",
+    bruisingColor: "jaune",
+    habitat: "parc",
+    seasonTags: "été,automne",
+    warnings: "Provoque des troubles gastro-intestinaux. Jaunit au frottement.",
+  },
+  {
+    commonNameFr: "Trompette de la mort",
+    scientificName: "Craterellus cornucopioides",
+    family: "Cantharellaceae",
+    edibilityStatus: "comestible",
+    capShape: "entonnoir",
+    capColor: "noir",
+    hymenophoreType: "plis",
+    sporePrintColor: "blanc_crème",
+    habitat: "forêt",
+    seasonTags: "été,automne",
+    description: "Noire, en trompette, hyménium ridé.",
+  },
+  {
+    commonNameFr: "Pied-de-mouton",
+    scientificName: "Hydnum repandum",
+    family: "Hydnaceae",
+    edibilityStatus: "comestible",
+    capShape: "convexe",
+    capColor: "ocre",
+    hymenophoreType: "aiguillons",
+    sporePrintColor: "blanc",
+    habitat: "forêt",
+    seasonTags: "été,automne",
+    description: "Présence d'aiguillons sous le chapeau.",
+  },
+  {
+    commonNameFr: "Mousseron de printemps",
+    scientificName: "Calocybe gambosa",
+    family: "Lyophyllaceae",
+    edibilityStatus: "comestible",
+    capShape: "convexe",
+    capColor: "blanc_crème",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "blanc",
+    habitat: "prairie",
+    seasonTags: "printemps",
+    description: "Odeur de farine, pousse en ronds de sorcière.",
+  },
+  {
+    commonNameFr: "Clitocybe nébuleux",
+    scientificName: "Clitocybe nebularis",
+    family: "Tricholomataceae",
+    edibilityStatus: "non_comestible",
+    capShape: "plat",
+    capColor: "gris",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "blanc",
+    habitat: "forêt",
+    seasonTags: "automne",
+    warnings: "Peut être mal toléré. À éviter.",
+  },
+  {
+    commonNameFr: "Pleurote en huître",
+    scientificName: "Pleurotus ostreatus",
+    family: "Pleurotaceae",
+    edibilityStatus: "comestible",
+    capShape: "en_eventail",
+    capColor: "gris",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "blanc",
+    habitat: "souche",
+    seasonTags: "automne,hiver",
+    description: "Sur bois, chapeau en huître, lamelles décurrentes.",
+  },
+  {
+    commonNameFr: "Shiitake (cultivé)",
+    scientificName: "Lentinula edodes",
+    family: "Omphalotaceae",
+    edibilityStatus: "comestible",
+    capShape: "convexe",
+    capColor: "brun",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "blanc",
+    habitat: "culture",
+    seasonTags: "toute_annee",
+    description: "Champignon de culture sur bûches/substrat.",
+  },
+  {
+    commonNameFr: "Morille commune",
+    scientificName: "Morchella esculenta",
+    family: "Morchellaceae",
+    edibilityStatus: "comestible",
+    capShape: "alvéolé",
+    capColor: "brun_jaune",
+    hymenophoreType: "plis",
+    sporePrintColor: "crème",
+    habitat: "forêt",
+    seasonTags: "printemps",
+    warnings: "Toujours bien cuire (toxique crue).",
+  },
+  {
+    commonNameFr: "Bolet à pied rouge (luride)",
+    scientificName: "Suillellus luridus",
+    family: "Boletaceae",
+    edibilityStatus: "non_comestible",
+    capShape: "convexe",
+    capColor: "brun_olive",
+    hymenophoreType: "tubes",
+    sporePrintColor: "olive",
+    bruisingColor: "bleu",
+    habitat: "forêt",
+    seasonTags: "été,automne",
+    warnings: "Confusions possibles; bleuissant. Considéré à risque selon pays/traitement.",
+  },
+  {
+    commonNameFr: "Bolet satan",
+    scientificName: "Rubroboletus satanas",
+    family: "Boletaceae",
+    edibilityStatus: "toxique",
+    capShape: "convexe",
+    capColor: "blanc_gris",
+    hymenophoreType: "tubes",
+    sporePrintColor: "olive",
+    bruisingColor: "bleu",
+    habitat: "forêt",
+    seasonTags: "été",
+    warnings: "Toxique, tubes rouges/orangés, bleuissant au toucher.",
+  },
+  {
+    commonNameFr: "Lactaire délicieux",
+    scientificName: "Lactarius deliciosus",
+    family: "Russulaceae",
+    edibilityStatus: "comestible",
+    capShape: "entonnoir",
+    capColor: "orange",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "crème",
+    bruisingColor: "vert",
+    habitat: "forêt",
+    seasonTags: "été,automne",
+    description: "Latex orangé, verdit à la manipulation.",
+  },
+  {
+    commonNameFr: "Russule charbonnière",
+    scientificName: "Russula cyanoxantha",
+    family: "Russulaceae",
+    edibilityStatus: "comestible",
+    capShape: "plat",
+    capColor: "violet",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "crème",
+    habitat: "forêt",
+    seasonTags: "été,automne",
+    description: "Lamelles souples, chapeau souvent violacé/vert.",
+  },
+  {
+    commonNameFr: "Galerine marginée",
+    scientificName: "Galerina marginata",
+    family: "Hymenogastraceae",
+    edibilityStatus: "toxique",
+    capShape: "convexe",
+    capColor: "brun_miel",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "brun_rouille",
+    hasRing: true,
+    habitat: "souche",
+    seasonTags: "été,automne",
+    warnings: "Mortelle. Petite, sur bois; confusions avec espèces comestibles.",
+  },
+  {
+    commonNameFr: "Fausse girolle",
+    scientificName: "Hygrophoropsis aurantiaca",
+    family: "Hygrophoropsidaceae",
+    edibilityStatus: "non_comestible",
+    capShape: "entonnoir",
+    capColor: "orange",
+    hymenophoreType: "lamelles",
+    sporePrintColor: "blanc",
+    habitat: "forêt",
+    seasonTags: "été,automne",
+    warnings: "Peut provoquer des troubles digestifs; confusions avec la girolle.",
+  },
+];
+
+async function main() {
+  await prisma.mushroom.deleteMany();
+
+  await prisma.mushroom.createMany({
+    data: mushrooms.map((m) => ({
+      ...m,
+      hasRing: m.hasRing ?? false,
+      hasVolva: m.hasVolva ?? false,
+    })),
+  });
+}
+
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (error) => {
+    console.error(error);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
+
