@@ -1,6 +1,29 @@
 import { PrismaClient } from "@prisma/client";
+import "dotenv/config";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
+import path from "node:path";
 
-const prisma = new PrismaClient();
+const databaseUrl = process.env["DATABASE_URL"];
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL manquant dans l'environnement (.env).");
+}
+
+const isSqliteUrl = databaseUrl === ":memory:" || databaseUrl.startsWith("file:");
+
+const prisma = new PrismaClient({
+  adapter: isSqliteUrl
+    ? new PrismaBetterSqlite3({
+        url:
+          databaseUrl === ":memory:"
+            ? ":memory:"
+            : path.resolve(process.cwd(), databaseUrl.replace(/^file:/, "")),
+      })
+    : new PrismaPg(new pg.Pool({ connectionString: databaseUrl }), {
+        disposeExternalPool: true,
+      }),
+});
 
 interface SeedMushroom {
   commonNameFr: string;
@@ -328,7 +351,6 @@ main()
     await prisma.$disconnect();
   })
   .catch(async (error) => {
-    // eslint-disable-next-line no-console
     console.error(error);
     await prisma.$disconnect();
     process.exit(1);
