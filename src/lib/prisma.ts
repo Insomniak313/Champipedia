@@ -48,13 +48,16 @@ export async function getPrismaOptional() {
   if (cached) return cached;
 
   globalThis.__prismaOptionalPromise = (async () => {
-    const prismaModule: any = await import("@prisma/client");
-    const PrismaClientConstructor =
-      prismaModule?.PrismaClient ?? prismaModule?.default?.PrismaClient;
+    const prismaModule = (await import("@prisma/client")) as unknown;
+    const PrismaClientConstructor = (prismaModule as { PrismaClient?: unknown })
+      .PrismaClient;
 
     if (!PrismaClientConstructor) return null;
 
-    return createPrismaClient(PrismaClientConstructor, databaseUrl);
+    return createPrismaClient(
+      PrismaClientConstructor as new (args: unknown) => PrismaLikeClient,
+      databaseUrl,
+    );
   })();
 
   return globalThis.__prismaOptionalPromise;
