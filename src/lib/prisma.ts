@@ -7,6 +7,7 @@ interface PrismaLikeClient {
   mushroom: {
     findMany: (args: unknown) => Promise<unknown[]>;
     findUnique: (args: unknown) => Promise<unknown | null>;
+    update: (args: unknown) => Promise<unknown>;
   };
 }
 

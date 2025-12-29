@@ -1,7 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getMushroomById } from "@/lib/mushroomQueries";
+import { MushroomPhotoManager } from "@/components/MushroomPhotoManager";
 
 interface MushroomPageProps {
   params: Promise<{ id: string }>;
@@ -90,6 +92,40 @@ export default async function MushroomPage(props: MushroomPageProps) {
           </span>
         </div>
       </div>
+
+      <section className="rounded-3xl border border-black/10 bg-white p-6 dark:border-white/10 dark:bg-black">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <h2 className="text-base font-semibold">Photo</h2>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400">
+            Ajoutez ou remplacez la photo de ce champignon.
+          </p>
+        </div>
+
+        <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-black/10 bg-zinc-50 dark:border-white/10 dark:bg-white/5">
+            {mushroom.imageUrl ? (
+              <Image
+                src={mushroom.imageUrl}
+                alt={`Photo — ${mushroom.commonNameFr}`}
+                fill
+                sizes="(max-width: 1024px) 100vw, 720px"
+                className="object-cover"
+                priority
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center p-6 text-sm text-zinc-600 dark:text-zinc-400">
+                Aucune photo pour le moment.
+              </div>
+            )}
+          </div>
+
+          <MushroomPhotoManager
+            mushroomId={mushroom.id}
+            mushroomName={mushroom.commonNameFr}
+            initialImageUrl={mushroom.imageUrl ?? null}
+          />
+        </div>
+      </section>
 
       <section className="grid gap-3 rounded-3xl border border-black/10 bg-white p-6 dark:border-white/10 dark:bg-black">
         <h2 className="text-base font-semibold">Résumé</h2>
