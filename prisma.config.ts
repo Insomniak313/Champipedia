@@ -3,6 +3,15 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+const DEFAULT_DEV_DATABASE_URL = "file:./prisma/dev.db";
+
+function getDatabaseUrl() {
+  const databaseUrl = process.env["DATABASE_URL"];
+  if (databaseUrl && databaseUrl.trim().length > 0) return databaseUrl;
+  if (process.env["NODE_ENV"] === "production") return undefined;
+  return DEFAULT_DEV_DATABASE_URL;
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
@@ -10,6 +19,6 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: getDatabaseUrl(),
   },
 });

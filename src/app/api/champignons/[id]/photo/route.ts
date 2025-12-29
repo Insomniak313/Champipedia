@@ -82,30 +82,57 @@ export async function POST(request: Request, context: RouteContext) {
     );
   }
 
-  const existing = (await prisma.mushroom.findUnique({ where: { id } })) as
-    | { imageUrl?: string | null }
-    | null;
-  if (!existing) {
-    return NextResponse.json({ error: "Champignon introuvable." }, { status: 404 });
+  try {
+    const existing = (await prisma.mushroom.findUnique({ where: { id } })) as
+      | { imageUrl?: string | null }
+      | null;
+    if (!existing) {
+      return NextResponse.json(
+        {
+          error:
+            "Champignon introuvable. Si vous venez d'installer le projet, exécutez: npm run db:push && npm run db:seed",
+        },
+        { status: 404 },
+      );
+    }
+
+    await fs.mkdir(getUploadsAbsoluteDir(), { recursive: true });
+    const fileName = `${id}-${Date.now()}.${ext}`;
+    const publicPath = `${UPLOADS_PUBLIC_DIR}/${fileName}`;
+    const absolutePath = path.join(process.cwd(), "public", publicPath);
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await fs.writeFile(absolutePath, buffer);
+
+    try {
+      // On remplace : suppression de l'ancienne image si elle était gérée par l'app.
+      await deleteIfManagedUpload(existing.imageUrl ?? null);
+
+      const updated = (await prisma.mushroom.update({
+        where: { id },
+        data: { imageUrl: publicPath },
+      })) as { imageUrl?: string | null };
+
+      return NextResponse.json({ imageUrl: updated.imageUrl ?? null });
+    } catch {
+      await fs.unlink(absolutePath).catch(() => undefined);
+      return NextResponse.json(
+        {
+          error:
+            "La base de données n'est pas initialisée. Lancez: npm run db:push && npm run db:seed (ou configurez DATABASE_URL).",
+        },
+        { status: 503 },
+      );
+    }
+  } catch {
+    return NextResponse.json(
+      {
+        error:
+          "La base de données n'est pas initialisée. Lancez: npm run db:push && npm run db:seed (ou configurez DATABASE_URL).",
+      },
+      { status: 503 },
+    );
   }
-
-  await fs.mkdir(getUploadsAbsoluteDir(), { recursive: true });
-  const fileName = `${id}-${Date.now()}.${ext}`;
-  const publicPath = `${UPLOADS_PUBLIC_DIR}/${fileName}`;
-  const absolutePath = path.join(process.cwd(), "public", publicPath);
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(absolutePath, buffer);
-
-  // On remplace : suppression de l'ancienne image si elle était gérée par l'app.
-  await deleteIfManagedUpload(existing.imageUrl ?? null);
-
-  const updated = (await prisma.mushroom.update({
-    where: { id },
-    data: { imageUrl: publicPath },
-  })) as { imageUrl?: string | null };
-
-  return NextResponse.json({ imageUrl: updated.imageUrl ?? null });
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {
@@ -118,20 +145,36 @@ export async function DELETE(_request: Request, context: RouteContext) {
     );
   }
 
-  const existing = (await prisma.mushroom.findUnique({ where: { id } })) as
-    | { imageUrl?: string | null }
-    | null;
-  if (!existing) {
-    return NextResponse.json({ error: "Champignon introuvable." }, { status: 404 });
+  try {
+    const existing = (await prisma.mushroom.findUnique({ where: { id } })) as
+      | { imageUrl?: string | null }
+      | null;
+    if (!existing) {
+      return NextResponse.json(
+        {
+          error:
+            "Champignon introuvable. Si vous venez d'installer le projet, exécutez: npm run db:push && npm run db:seed",
+        },
+        { status: 404 },
+      );
+    }
+
+    await deleteIfManagedUpload(existing.imageUrl ?? null);
+
+    const updated = (await prisma.mushroom.update({
+      where: { id },
+      data: { imageUrl: null },
+    })) as { imageUrl?: string | null };
+
+    return NextResponse.json({ imageUrl: updated.imageUrl ?? null });
+  } catch {
+    return NextResponse.json(
+      {
+        error:
+          "La base de données n'est pas initialisée. Lancez: npm run db:push && npm run db:seed (ou configurez DATABASE_URL).",
+      },
+      { status: 503 },
+    );
   }
-
-  await deleteIfManagedUpload(existing.imageUrl ?? null);
-
-  const updated = (await prisma.mushroom.update({
-    where: { id },
-    data: { imageUrl: null },
-  })) as { imageUrl?: string | null };
-
-  return NextResponse.json({ imageUrl: updated.imageUrl ?? null });
 }
 

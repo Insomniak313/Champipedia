@@ -5,9 +5,20 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 import path from "node:path";
 
-const databaseUrl = process.env["DATABASE_URL"];
+const DEFAULT_DEV_DATABASE_URL = "file:./prisma/dev.db";
+
+function getDatabaseUrl() {
+  const databaseUrl = process.env["DATABASE_URL"];
+  if (databaseUrl && databaseUrl.trim().length > 0) return databaseUrl;
+  if (process.env["NODE_ENV"] === "production") return null;
+  return DEFAULT_DEV_DATABASE_URL;
+}
+
+const databaseUrl = getDatabaseUrl();
 if (!databaseUrl) {
-  throw new Error("DATABASE_URL manquant dans l'environnement (.env).");
+  throw new Error(
+    "DATABASE_URL manquant dans l'environnement (.env). En dev, vous pouvez utiliser: file:./prisma/dev.db",
+  );
 }
 
 const isSqliteUrl = databaseUrl === ":memory:" || databaseUrl.startsWith("file:");

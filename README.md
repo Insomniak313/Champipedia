@@ -1,4 +1,25 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Champipedia
+
+Application Next.js + Prisma.
+
+## Configuration base de données (important)
+
+L’upload de photo nécessite une base configurée (table `Mushroom`).
+
+- Copiez `.env.example` en `.env`
+- Par défaut (dev), SQLite est supporté :
+
+```bash
+cp .env.example .env
+```
+
+Puis générez le client Prisma et créez la base :
+
+```bash
+npm run db:generate
+npm run db:push
+npm run db:seed
+```
 
 ## Getting Started
 

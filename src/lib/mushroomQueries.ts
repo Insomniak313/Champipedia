@@ -37,26 +37,34 @@ export async function listMushrooms(filters: MushroomFilters) {
       .sort(sortByCommonNameFr);
   }
 
-  const items = await prisma.mushroom.findMany({
-    where: {
-      ...(edibilityStatus ? { edibilityStatus } : {}),
-      ...(query
-        ? {
-            OR: [
-              { commonNameFr: getContainsFilter(query) },
-              { scientificName: getContainsFilter(query) },
-              { family: getContainsFilter(query) },
-              { capColor: getContainsFilter(query) },
-              { hymenophoreType: getContainsFilter(query) },
-              { habitat: getContainsFilter(query) },
-            ],
-          }
-        : {}),
-    },
-    orderBy: { commonNameFr: "asc" },
-  });
+  try {
+    const items = await prisma.mushroom.findMany({
+      where: {
+        ...(edibilityStatus ? { edibilityStatus } : {}),
+        ...(query
+          ? {
+              OR: [
+                { commonNameFr: getContainsFilter(query) },
+                { scientificName: getContainsFilter(query) },
+                { family: getContainsFilter(query) },
+                { capColor: getContainsFilter(query) },
+                { hymenophoreType: getContainsFilter(query) },
+                { habitat: getContainsFilter(query) },
+              ],
+            }
+          : {}),
+      },
+      orderBy: { commonNameFr: "asc" },
+    });
 
-  return items as unknown as Mushroom[];
+    return items as unknown as Mushroom[];
+  } catch {
+    return fallbackMushrooms
+      .filter((m) => (edibilityStatus ? m.edibilityStatus === edibilityStatus : true))
+      .filter((m) => matchesQuery(m, query))
+      .slice()
+      .sort(sortByCommonNameFr);
+  }
 }
 
 export async function getMushroomById(id: string) {
@@ -65,7 +73,11 @@ export async function getMushroomById(id: string) {
     return fallbackMushrooms.find((m) => m.id === id) ?? null;
   }
 
-  const item = await prisma.mushroom.findUnique({ where: { id } });
-  return (item as unknown as Mushroom | null) ?? null;
+  try {
+    const item = await prisma.mushroom.findUnique({ where: { id } });
+    return (item as unknown as Mushroom | null) ?? null;
+  } catch {
+    return fallbackMushrooms.find((m) => m.id === id) ?? null;
+  }
 }
 
