@@ -11,9 +11,13 @@ interface PrismaLikeClient {
   };
 }
 
+const DEFAULT_DEV_DATABASE_URL = "file:./prisma/dev.db";
+
 function getDatabaseUrl() {
   const databaseUrl = process.env["DATABASE_URL"];
-  return databaseUrl && databaseUrl.trim().length > 0 ? databaseUrl : null;
+  if (databaseUrl && databaseUrl.trim().length > 0) return databaseUrl;
+  if (process.env["NODE_ENV"] === "production") return null;
+  return DEFAULT_DEV_DATABASE_URL;
 }
 
 function getIsSqliteUrl(databaseUrl: string) {
