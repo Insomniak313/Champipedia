@@ -7,7 +7,8 @@ Application Next.js + Prisma.
 L’upload de photo nécessite une base configurée (table `Mushroom`).
 
 - Copiez `.env.example` en `.env`
-- Par défaut (dev), SQLite est supporté :
+- En production, configurez **`PRISMA_DB_URL`** (ou **`POSTGRES_URL`**).
+- Par défaut (dev), si aucune variable n’est définie, SQLite est utilisé (`file:./prisma/dev.db`) :
 
 ```bash
 cp .env.example .env
