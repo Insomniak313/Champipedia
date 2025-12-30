@@ -52,7 +52,7 @@ export async function POST(request: Request, context: RouteContext) {
   const prisma = await getPrismaOptional();
   if (!prisma) {
     return NextResponse.json(
-      { error: "La base de données n’est pas configurée (DATABASE_URL manquant)." },
+      { error: "La base de données n’est pas configurée (PRISMA_DB_URL/POSTGRES_URL manquant)." },
       { status: 503 },
     );
   }
@@ -119,7 +119,7 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json(
         {
           error:
-            "La base de données n'est pas initialisée. Lancez: npm run db:push && npm run db:seed (ou configurez DATABASE_URL).",
+            "La base de données n'est pas initialisée. Lancez: npm run db:push && npm run db:seed (ou configurez PRISMA_DB_URL/POSTGRES_URL).",
         },
         { status: 503 },
       );
@@ -128,7 +128,7 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json(
       {
         error:
-          "La base de données n'est pas initialisée. Lancez: npm run db:push && npm run db:seed (ou configurez DATABASE_URL).",
+          "La base de données n'est pas initialisée. Lancez: npm run db:push && npm run db:seed (ou configurez PRISMA_DB_URL/POSTGRES_URL).",
       },
       { status: 503 },
     );
@@ -140,7 +140,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   const prisma = await getPrismaOptional();
   if (!prisma) {
     return NextResponse.json(
-      { error: "La base de données n’est pas configurée (DATABASE_URL manquant)." },
+      { error: "La base de données n’est pas configurée (PRISMA_DB_URL/POSTGRES_URL manquant)." },
       { status: 503 },
     );
   }
@@ -171,7 +171,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     return NextResponse.json(
       {
         error:
-          "La base de données n'est pas initialisée. Lancez: npm run db:push && npm run db:seed (ou configurez DATABASE_URL).",
+          "La base de données n'est pas initialisée. Lancez: npm run db:push && npm run db:seed (ou configurez PRISMA_DB_URL/POSTGRES_URL).",
       },
       { status: 503 },
     );

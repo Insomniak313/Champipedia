@@ -5,9 +5,20 @@ import { defineConfig } from "prisma/config";
 
 const DEFAULT_DEV_DATABASE_URL = "file:./prisma/dev.db";
 
+const DATABASE_URL_ENV_KEYS = ["PRISMA_DB_URL", "POSTGRES_URL", "DATABASE_URL"] as const;
+
+function getEnvDatabaseUrl() {
+  for (const key of DATABASE_URL_ENV_KEYS) {
+    const raw = process.env[key];
+    const value = raw?.trim();
+    if (value) return value;
+  }
+  return null;
+}
+
 function getDatabaseUrl() {
-  const databaseUrl = process.env["DATABASE_URL"];
-  if (databaseUrl && databaseUrl.trim().length > 0) return databaseUrl;
+  const databaseUrl = getEnvDatabaseUrl();
+  if (databaseUrl) return databaseUrl;
   if (process.env["NODE_ENV"] === "production") return undefined;
   return DEFAULT_DEV_DATABASE_URL;
 }

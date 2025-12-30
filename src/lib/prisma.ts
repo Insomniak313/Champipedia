@@ -13,14 +13,25 @@ interface PrismaLikeClient {
 
 const DEFAULT_DEV_DATABASE_URL = "file:./prisma/dev.db";
 
-function getDatabaseUrl() {
-  const databaseUrl = process.env["DATABASE_URL"];
-  if (databaseUrl && databaseUrl.trim().length > 0) return databaseUrl;
+const DATABASE_URL_ENV_KEYS = ["PRISMA_DB_URL", "POSTGRES_URL", "DATABASE_URL"] as const;
+
+function getEnvDatabaseUrl() {
+  for (const key of DATABASE_URL_ENV_KEYS) {
+    const raw = process.env[key];
+    const value = raw?.trim();
+    if (value) return value;
+  }
+  return null;
+}
+
+export function getDatabaseUrlOptional() {
+  const databaseUrl = getEnvDatabaseUrl();
+  if (databaseUrl) return databaseUrl;
   if (process.env["NODE_ENV"] === "production") return null;
   return DEFAULT_DEV_DATABASE_URL;
 }
 
-function getIsSqliteUrl(databaseUrl: string) {
+export function getIsSqliteUrl(databaseUrl: string) {
   return databaseUrl === ":memory:" || databaseUrl.startsWith("file:");
 }
 
@@ -46,7 +57,7 @@ declare global {
 }
 
 export async function getPrismaOptional() {
-  const databaseUrl = getDatabaseUrl();
+  const databaseUrl = getDatabaseUrlOptional();
   if (!databaseUrl) return null;
 
   const cached = globalThis.__prismaOptionalPromise;

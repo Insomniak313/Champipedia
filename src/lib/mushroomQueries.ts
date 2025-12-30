@@ -1,15 +1,15 @@
 import type { Mushroom } from "@/lib/mushrooms";
 import { fallbackMushrooms, matchesQuery, normalizeEdibilityStatus } from "@/lib/mushrooms";
-import { getPrismaOptional } from "@/lib/prisma";
+import { getDatabaseUrlOptional, getIsSqliteUrl, getPrismaOptional } from "@/lib/prisma";
 
 function sortByCommonNameFr(a: Mushroom, b: Mushroom) {
   return a.commonNameFr.localeCompare(b.commonNameFr, "fr");
 }
 
 function getIsSqliteDatabaseUrl() {
-  const databaseUrl = process.env["DATABASE_URL"];
+  const databaseUrl = getDatabaseUrlOptional();
   if (!databaseUrl) return true;
-  return databaseUrl === ":memory:" || databaseUrl.startsWith("file:");
+  return getIsSqliteUrl(databaseUrl);
 }
 
 function getContainsFilter(query: string) {
